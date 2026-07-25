@@ -4,6 +4,7 @@ const TOKEN_TYPE = Object.freeze({
   LBRACE: "{",
   RBRACE: "}",
   COLON: ":",
+  COMMA: ",",
 });
 
 class Token {
@@ -25,6 +26,17 @@ function parseNumber(s, i) {
   return { value: totalNumber, nextIndex: i };
 }
 
+function parseString(s, i) {
+  let stringValue = "";
+
+  while (i < s.length && s[i] !== '"' && s[i].match(/[a-zA-Z]/)) {
+    stringValue += s[i];
+    i++;
+  }
+
+  return { value: stringValue, nextIndex: i };
+}
+
 function tokenize(source) {
   let tokens = [];
 
@@ -43,22 +55,16 @@ function tokenize(source) {
         tokens.push(new Token(TOKEN_TYPE.RBRACE));
         break;
       case '"':
-        i++;
-        let stringValue = "";
+        const { value, nextIndex } = parseString(source, i + 1);
 
-        while (
-          i < source.length &&
-          source[i] !== '"' &&
-          source[i].match(/[a-zA-Z]/)
-        ) {
-          stringValue += source[i];
-          i++;
-        }
-
-        tokens.push(new Token(TOKEN_TYPE.STRING, stringValue));
+        i = nextIndex;
+        tokens.push(new Token(TOKEN_TYPE.STRING, value));
         break;
       case ":":
         tokens.push(new Token(TOKEN_TYPE.COLON));
+        break;
+      case ",":
+        tokens.push(new Token(TOKEN_TYPE.COMMA));
         break;
     }
   }
@@ -67,7 +73,7 @@ function tokenize(source) {
 }
 
 function main() {
-  const jsonString = '{"age":45}';
+  const jsonString = '{"age":45, "name": "Abhijit"}';
 
   console.log(tokenize(jsonString));
 }
