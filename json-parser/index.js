@@ -16,7 +16,9 @@ export class Token {
   }
 }
 
-function parseNumber(s, i) {
+/* Token Readers */
+// TODO: handle "-", decimal point and exponent
+function readNumber(s, i) {
   let totalNumber = 0;
 
   while (i < s.length && s[i].match(/[0-9]/)) {
@@ -28,7 +30,8 @@ function parseNumber(s, i) {
   return { value: totalNumber, nextIndex: i };
 }
 
-function parseString(s, i) {
+// TODO: handle escape sequence
+function readString(s, i) {
   let stringValue = "";
 
   while (i < s.length && s[i] !== '"') {
@@ -36,38 +39,49 @@ function parseString(s, i) {
     i++;
   }
 
-  return { value: stringValue, nextIndex: i };
+  return { value: stringValue, nextIndex: i+1 };
 }
 
+/* Tokenizer */
 export function tokenize(source) {
   let tokens = [];
+  let i = 0;
 
-  for (let i = 0; i < source.length; i++) {
-    if (source[i].match(/[0-9]/)) {
-      const { value, nextIndex } = parseNumber(source, i);
+  while (i < source.length) {
+    if (source[i].match(/[0-9]/) || source[i] === "-") {
+      const { value, nextIndex } = readNumber(source, i);
+
       tokens.push(new Token(TOKEN_TYPE.NUMBER, value));
       i = nextIndex;
-    }
+    } else if (source[i] === `"`) {
+      // pass next index to skip current quote
+      const { value, nextIndex } = readString(source, i + 1);
 
-    switch (source[i]) {
-      case "{":
-        tokens.push(new Token(TOKEN_TYPE.LBRACE));
-        break;
-      case "}":
-        tokens.push(new Token(TOKEN_TYPE.RBRACE));
-        break;
-      case '"':
-        const { value, nextIndex } = parseString(source, i + 1);
-
-        i = nextIndex;
-        tokens.push(new Token(TOKEN_TYPE.STRING, value));
-        break;
-      case ":":
-        tokens.push(new Token(TOKEN_TYPE.COLON));
-        break;
-      case ",":
-        tokens.push(new Token(TOKEN_TYPE.COMMA));
-        break;
+      tokens.push(new Token(TOKEN_TYPE.STRING, value));
+      i = nextIndex;
+    } else if (source[i] === " ") {
+      i++;
+      continue;
+    } else {
+      switch (source[i]) {
+        case "{":
+          tokens.push(new Token(TOKEN_TYPE.LBRACE));
+          break;
+        case "}":
+          tokens.push(new Token(TOKEN_TYPE.RBRACE));
+          break;
+        case '"':
+          break;
+        case ":":
+          tokens.push(new Token(TOKEN_TYPE.COLON));
+          break;
+        case ",":
+          tokens.push(new Token(TOKEN_TYPE.COMMA));
+          break;
+        default:
+          throw new Error(`Unexpected token at position: ${i}`);
+      }
+      i++;
     }
   }
 
@@ -75,8 +89,7 @@ export function tokenize(source) {
 }
 
 function main() {
-  // const jsonString = '{"age":45, "name": "Abhijit"}';
-
+  // const jsonString = '{"age":45, "name": "john doe"}';
   // console.log(tokenize(jsonString));
 }
 
