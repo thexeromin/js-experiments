@@ -1,13 +1,15 @@
-const TOKEN_TYPE = Object.freeze({
+export const TOKEN_TYPE = Object.freeze({
   NUMBER: "NUMBER",
   STRING: "STRING",
-  LBRACE: "{",
-  RBRACE: "}",
-  COLON: ":",
-  COMMA: ",",
+  LBRACE: "LBRACE",
+  RBRACE: "RBRACE",
+  LBRACKET: "LBRACKET",
+  RBRACKET: "LBRACKET",
+  COLON: "COLON",
+  COMMA: "COMMA",
 });
 
-class Token {
+export class Token {
   constructor(type, value = null) {
     this.type = type;
     this.value = value;
@@ -29,7 +31,7 @@ function parseNumber(s, i) {
 function parseString(s, i) {
   let stringValue = "";
 
-  while (i < s.length && s[i] !== '"' && s[i].match(/[a-zA-Z]/)) {
+  while (i < s.length && s[i] !== '"') {
     stringValue += s[i];
     i++;
   }
@@ -37,7 +39,7 @@ function parseString(s, i) {
   return { value: stringValue, nextIndex: i };
 }
 
-function tokenize(source) {
+export function tokenize(source) {
   let tokens = [];
 
   for (let i = 0; i < source.length; i++) {
@@ -73,9 +75,9 @@ function tokenize(source) {
 }
 
 function main() {
-  const jsonString = '{"age":45, "name": "Abhijit"}';
+  // const jsonString = '{"age":45, "name": "Abhijit"}';
 
-  console.log(tokenize(jsonString));
+  // console.log(tokenize(jsonString));
 }
 
 main();
