@@ -17,9 +17,16 @@ export class Token {
 }
 
 /* Token Readers */
-// TODO: handle "-", decimal point and exponent
-function readNumber(s, i) {
+// TODO: floating point precision issue e.g. 6.022e23
+export function readNumber(s, i) {
+  let sign;
+  let power = 1.0;
+  let exp = 0;
   let totalNumber = 0;
+
+  // sign
+  sign = s[i] === "-" ? -1 : 1;
+  if (s[i] === "-") i++;
 
   while (i < s.length && s[i].match(/[0-9]/)) {
     let currentNumber = s[i].charCodeAt(0) - "0".charCodeAt(0);
@@ -27,7 +34,36 @@ function readNumber(s, i) {
     i++;
   }
 
-  return { value: totalNumber, nextIndex: i };
+  // decimal point
+  if (s[i] === ".") {
+    i++;
+
+    while (i < s.length && s[i].match(/[0-9]/)) {
+      let currentNumber = s[i].charCodeAt(0) - "0".charCodeAt(0);
+      totalNumber = 10 * totalNumber + currentNumber;
+      power *= 10;
+      i++;
+    }
+  }
+
+  // exponent
+  if (s[i] === "e" || s[i] === 'E') {
+    i++;
+    let sign = s[i] === "-" ? -1 : 1;
+
+    if (s[i] === "-" || s[i] === "+") i++;
+    while (i < s.length && s[i].match(/[0-9]/)) {
+      let currentNumber = s[i].charCodeAt(0) - "0".charCodeAt(0);
+      exp = 10 * exp + currentNumber;
+      i++;
+    }
+    exp = exp * sign;
+  }
+
+  return {
+    value: ((sign * totalNumber) / power) * Math.pow(10, exp),
+    nextIndex: i,
+  };
 }
 
 // TODO: handle escape sequence
@@ -39,7 +75,7 @@ function readString(s, i) {
     i++;
   }
 
-  return { value: stringValue, nextIndex: i+1 };
+  return { value: stringValue, nextIndex: i + 1 };
 }
 
 /* Tokenizer */
