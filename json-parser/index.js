@@ -16,6 +16,20 @@ export class Token {
   }
 }
 
+function readNext4HexDigits(input, i) {
+  let hex = "";
+
+  for (let j = 0; j < 4; j++) {
+    let ch = input[i + j];
+
+    if (!/[0-9a-fA-F]/.test(ch)) throw new Error("Invalid Unicode escape");
+
+    hex += ch;
+  }
+
+  return hex;
+}
+
 /* Token Readers */
 // TODO: floating point precision issue e.g. 6.022e23
 export function readNumber(s, i) {
@@ -47,7 +61,7 @@ export function readNumber(s, i) {
   }
 
   // exponent
-  if (s[i] === "e" || s[i] === 'E') {
+  if (s[i] === "e" || s[i] === "E") {
     i++;
     let sign = s[i] === "-" ? -1 : 1;
 
@@ -66,16 +80,61 @@ export function readNumber(s, i) {
   };
 }
 
-// TODO: handle escape sequence
-function readString(s, i) {
-  let stringValue = "";
+export function readString(s, i) {
+  let result = "";
 
   while (i < s.length && s[i] !== '"') {
-    stringValue += s[i];
-    i++;
+    if (s[i] === "\\") {
+      i++;
+
+      if (i >= s.length) throw new Error("Unterminated escape sequence");
+
+      switch (s[i]) {
+        case '"':
+          result += '"';
+          break;
+        case "\\":
+          result += "\\";
+          break;
+        case "/":
+          result += "/";
+          break;
+        case "b":
+          result += "\b";
+          break;
+        case "f":
+          result += "\f";
+          break;
+        case "n":
+          result += "\n";
+          break;
+        case "r":
+          result += "\r";
+          break;
+        case "t":
+          result += "\t";
+          break;
+        case "u":
+          let hex = readNext4HexDigits(s, i + 1);
+          result += String.fromCharCode(parseInt(hex, 16));
+          i += 4;
+          break;
+        default:
+          throw new Error("Invalid escape sequence");
+      }
+      i++;
+    } else {
+      if (s[i] < " ") {
+        throw new Error("Bad control character in string");
+      }
+
+      result += s[i];
+      i++;
+    }
   }
 
-  return { value: stringValue, nextIndex: i + 1 };
+  if (s[i] !== `"`) throw new Error("Unterminated string");
+  return { value: result, nextIndex: i + 1 };
 }
 
 /* Tokenizer */
