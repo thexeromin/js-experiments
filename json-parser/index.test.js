@@ -5,6 +5,7 @@ import {
   TOKEN_TYPE,
   readNumber,
   readString,
+  readNull,
 } from "./index.js";
 
 describe("Read valid numbers used in JSON", () => {
@@ -78,6 +79,36 @@ describe("Read strings used in JSON", () => {
   });
 });
 
+describe("Read null used in JSON", () => {
+  test("valid null read", () => {
+    const input = `"null"`;
+    const res = readNull(input, 1);
+    expect(res).toEqual({
+      value: null,
+      nextIndex: input.length - 1,
+    });
+  });
+
+  test("valid null read at start of string", () => {
+    const input = "null";
+    const res = readNull(input, 0);
+    expect(res).toEqual({
+      value: null,
+      nextIndex: 4,
+    });
+  });
+
+  test("invalid null read - truncated", () => {
+    const input = "nul";
+    expect(() => readNull(input, 0)).toThrow();
+  });
+
+  test("invalid null read - wrong casing", () => {
+    const input = "Null";
+    expect(() => readNull(input, 0)).toThrow();
+  });
+});
+
 test("tokenize simple object with number", () => {
   const input = '{"age":45}';
 
@@ -93,3 +124,19 @@ test("tokenize simple object with number", () => {
 
   expect(result).toEqual(expected);
 });
+
+test("tokenize null", () => {
+  const input = '{"foo":null}';
+
+  const result = tokenize(input);
+
+  const expected = [
+    new Token(TOKEN_TYPE.LBRACE),
+    new Token(TOKEN_TYPE.STRING, "foo"),
+    new Token(TOKEN_TYPE.COLON),
+    new Token(TOKEN_TYPE.NULL, null),
+    new Token(TOKEN_TYPE.RBRACE),
+  ];
+
+  expect(result).toEqual(expected);
+})
