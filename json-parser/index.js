@@ -8,6 +8,7 @@ export const TOKEN_TYPE = Object.freeze({
   COLON: "COLON",
   COMMA: "COMMA",
   NULL: "NULL",
+  BOOLEAN: "BOOLEAN",
 });
 
 export class Token {
@@ -147,6 +148,17 @@ export function readNull(s, i) {
   return { value: null, nextIndex: i + target.length };
 }
 
+export function readBoolean(s, i) {
+  const targets = ["true", "false"];
+
+  if (s.slice(i, i + targets[0].length) === targets[0])
+    return { value: true, nextIndex: i + targets[0].length };
+  else if (s.slice(i, i + targets[1].length) === targets[1])
+    return { value: false, nextIndex: i + targets[1].length };
+  else
+    throw new Error("Unexpected Token")
+}
+
 /* Tokenizer */
 export function tokenize(source) {
   let tokens = [];
@@ -171,6 +183,11 @@ export function tokenize(source) {
       const { value, nextIndex } = readNull(source, i);
 
       tokens.push(new Token(TOKEN_TYPE.NULL, value));
+      i = nextIndex;
+    } else if (source[i] === "t" || source[i] === "f") {
+      const { value, nextIndex } = readBoolean(source, i);
+
+      tokens.push(new Token(TOKEN_TYPE.BOOLEAN, value));
       i = nextIndex;
     } else {
       switch (source[i]) {
