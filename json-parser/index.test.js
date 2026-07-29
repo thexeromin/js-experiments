@@ -6,6 +6,7 @@ import {
   readNumber,
   readString,
   readNull,
+  readBoolean,
 } from "./index.js";
 
 describe("Read valid numbers used in JSON", () => {
@@ -109,34 +110,134 @@ describe("Read null used in JSON", () => {
   });
 });
 
-test("tokenize simple object with number", () => {
-  const input = '{"age":45}';
+describe("Read boolean used in JSON", () => {
+  test("valid true read", () => {
+    const input = `"true"`;
+    const res = readBoolean(input, 1);
+    expect(res).toEqual({
+      value: true,
+      nextIndex: input.length - 1,
+    });
+  });
 
-  const result = tokenize(input);
+  test("valid true read at start of string", () => {
+    const input = "true";
+    const res = readBoolean(input, 0);
+    expect(res).toEqual({
+      value: true,
+      nextIndex: 4,
+    });
+  });
 
-  const expected = [
-    new Token(TOKEN_TYPE.LBRACE),
-    new Token(TOKEN_TYPE.STRING, "age"),
-    new Token(TOKEN_TYPE.COLON),
-    new Token(TOKEN_TYPE.NUMBER, 45),
-    new Token(TOKEN_TYPE.RBRACE),
-  ];
+  test("valid false read", () => {
+    const input = `"false"`;
+    const res = readBoolean(input, 1);
+    expect(res).toEqual({
+      value: false,
+      nextIndex: input.length - 1,
+    });
+  });
 
-  expect(result).toEqual(expected);
+  test("valid false read at start of string", () => {
+    const input = "false";
+    const res = readBoolean(input, 0);
+    expect(res).toEqual({
+      value: false,
+      nextIndex: 5,
+    });
+  });
+
+  test("invalid boolean read - truncated true", () => {
+    const input = "tru";
+    expect(() => readBoolean(input, 0)).toThrow();
+  });
+
+  test("invalid boolean read - truncated false", () => {
+    const input = "fals";
+    expect(() => readBoolean(input, 0)).toThrow();
+  });
+
+  test("invalid boolean read - wrong casing true", () => {
+    const input = "True";
+    expect(() => readBoolean(input, 0)).toThrow();
+  });
+
+  test("invalid boolean read - wrong casing false", () => {
+    const input = "False";
+    expect(() => readBoolean(input, 0)).toThrow();
+  });
 });
 
-test("tokenize null", () => {
-  const input = '{"foo":null}';
+describe("tokenize", () => {
+  describe("primitive values", () => {
+    test("tokenize simple object with number", () => {
+      const input = '{"age":45}';
+      const result = tokenize(input);
+      expect(result).toEqual([
+        new Token(TOKEN_TYPE.LBRACE),
+        new Token(TOKEN_TYPE.STRING, "age"),
+        new Token(TOKEN_TYPE.COLON),
+        new Token(TOKEN_TYPE.NUMBER, 45),
+        new Token(TOKEN_TYPE.RBRACE),
+      ]);
+    });
 
-  const result = tokenize(input);
+    test("tokenize null", () => {
+      const input = '{"foo":null}';
+      const result = tokenize(input);
+      expect(result).toEqual([
+        new Token(TOKEN_TYPE.LBRACE),
+        new Token(TOKEN_TYPE.STRING, "foo"),
+        new Token(TOKEN_TYPE.COLON),
+        new Token(TOKEN_TYPE.NULL, null),
+        new Token(TOKEN_TYPE.RBRACE),
+      ]);
+    });
 
-  const expected = [
-    new Token(TOKEN_TYPE.LBRACE),
-    new Token(TOKEN_TYPE.STRING, "foo"),
-    new Token(TOKEN_TYPE.COLON),
-    new Token(TOKEN_TYPE.NULL, null),
-    new Token(TOKEN_TYPE.RBRACE),
-  ];
+    test("tokenize boolean value true", () => {
+      const input = '{"foo":true}';
+      const result = tokenize(input);
+      expect(result).toEqual([
+        new Token(TOKEN_TYPE.LBRACE),
+        new Token(TOKEN_TYPE.STRING, "foo"),
+        new Token(TOKEN_TYPE.COLON),
+        new Token(TOKEN_TYPE.BOOLEAN, true),
+        new Token(TOKEN_TYPE.RBRACE),
+      ]);
+    });
 
-  expect(result).toEqual(expected);
-})
+    test("tokenize boolean value false", () => {
+      const input = '{"foo":false}';
+      const result = tokenize(input);
+      expect(result).toEqual([
+        new Token(TOKEN_TYPE.LBRACE),
+        new Token(TOKEN_TYPE.STRING, "foo"),
+        new Token(TOKEN_TYPE.COLON),
+        new Token(TOKEN_TYPE.BOOLEAN, false),
+        new Token(TOKEN_TYPE.RBRACE),
+      ]);
+    });
+  });
+
+  describe("invalid input", () => {
+    test("throws on unterminated string", () => {
+      const input = '{"foo":"bar}';
+      expect(() => tokenize(input)).toThrow();
+    });
+
+    test("throws on invalid literal", () => {
+      const input = '{"foo":nul}';
+      expect(() => tokenize(input)).toThrow();
+    });
+
+    test("throws on unexpected character", () => {
+      const input = '{"foo":@}';
+      expect(() => tokenize(input)).toThrow();
+    });
+
+    test("throws on malformed number", () => {
+      const input = '{"foo":1.2.3}';
+      expect(() => tokenize(input)).toThrow();
+    });
+  });
+});
