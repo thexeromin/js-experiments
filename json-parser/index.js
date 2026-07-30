@@ -155,8 +155,7 @@ export function readBoolean(s, i) {
     return { value: true, nextIndex: i + targets[0].length };
   else if (s.slice(i, i + targets[1].length) === targets[1])
     return { value: false, nextIndex: i + targets[1].length };
-  else
-    throw new Error("Unexpected Token")
+  else throw new Error("Unexpected Token");
 }
 
 /* Tokenizer */
@@ -189,6 +188,9 @@ export function tokenize(source) {
 
       tokens.push(new Token(TOKEN_TYPE.BOOLEAN, value));
       i = nextIndex;
+    } else if (["\n", "\t"].includes(source[i])) {
+      i++;
+      continue;
     } else {
       switch (source[i]) {
         case "{":
@@ -196,6 +198,12 @@ export function tokenize(source) {
           break;
         case "}":
           tokens.push(new Token(TOKEN_TYPE.RBRACE));
+          break;
+        case "[":
+          tokens.push(new Token(TOKEN_TYPE.LBRACKET));
+          break;
+        case "]":
+          tokens.push(new Token(TOKEN_TYPE.RBRACKET));
           break;
         case '"':
           break;
@@ -206,7 +214,7 @@ export function tokenize(source) {
           tokens.push(new Token(TOKEN_TYPE.COMMA));
           break;
         default:
-          throw new Error(`Unexpected token at position: ${i}`);
+          throw new Error(`Unexpected token at position: ${i} ${source[i]}`);
       }
       i++;
     }
