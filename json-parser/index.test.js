@@ -219,6 +219,113 @@ describe("tokenize", () => {
     });
   });
 
+  describe("structural tokens", () => {
+    test("tokenize empty object", () => {
+      const input = "{}";
+      const result = tokenize(input);
+      expect(result).toEqual([
+        new Token(TOKEN_TYPE.LBRACE),
+        new Token(TOKEN_TYPE.RBRACE),
+      ]);
+    });
+
+    test("tokenize empty array", () => {
+      const input = "[]";
+      const result = tokenize(input);
+      expect(result).toEqual([
+        new Token(TOKEN_TYPE.LBRACKET),
+        new Token(TOKEN_TYPE.RBRACKET),
+      ]);
+    });
+
+    test("tokenize array of numbers", () => {
+      const input = "[1,2,3]";
+      const result = tokenize(input);
+      expect(result).toEqual([
+        new Token(TOKEN_TYPE.LBRACKET),
+        new Token(TOKEN_TYPE.NUMBER, 1),
+        new Token(TOKEN_TYPE.COMMA),
+        new Token(TOKEN_TYPE.NUMBER, 2),
+        new Token(TOKEN_TYPE.COMMA),
+        new Token(TOKEN_TYPE.NUMBER, 3),
+        new Token(TOKEN_TYPE.RBRACKET),
+      ]);
+    });
+
+    test("tokenize object with multiple keys", () => {
+      const input = '{"a":1,"b":2}';
+      const result = tokenize(input);
+      expect(result).toEqual([
+        new Token(TOKEN_TYPE.LBRACE),
+        new Token(TOKEN_TYPE.STRING, "a"),
+        new Token(TOKEN_TYPE.COLON),
+        new Token(TOKEN_TYPE.NUMBER, 1),
+        new Token(TOKEN_TYPE.COMMA),
+        new Token(TOKEN_TYPE.STRING, "b"),
+        new Token(TOKEN_TYPE.COLON),
+        new Token(TOKEN_TYPE.NUMBER, 2),
+        new Token(TOKEN_TYPE.RBRACE),
+      ]);
+    });
+
+    test("tokenize nested object", () => {
+      const input = '{"a":{"b":1}}';
+      const result = tokenize(input);
+      expect(result).toEqual([
+        new Token(TOKEN_TYPE.LBRACE),
+        new Token(TOKEN_TYPE.STRING, "a"),
+        new Token(TOKEN_TYPE.COLON),
+        new Token(TOKEN_TYPE.LBRACE),
+        new Token(TOKEN_TYPE.STRING, "b"),
+        new Token(TOKEN_TYPE.COLON),
+        new Token(TOKEN_TYPE.NUMBER, 1),
+        new Token(TOKEN_TYPE.RBRACE),
+        new Token(TOKEN_TYPE.RBRACE),
+      ]);
+    });
+
+    test("tokenize array of objects", () => {
+      const input = '[{"a":1},{"b":2}]';
+      const result = tokenize(input);
+      expect(result).toEqual([
+        new Token(TOKEN_TYPE.LBRACKET),
+        new Token(TOKEN_TYPE.LBRACE),
+        new Token(TOKEN_TYPE.STRING, "a"),
+        new Token(TOKEN_TYPE.COLON),
+        new Token(TOKEN_TYPE.NUMBER, 1),
+        new Token(TOKEN_TYPE.RBRACE),
+        new Token(TOKEN_TYPE.COMMA),
+        new Token(TOKEN_TYPE.LBRACE),
+        new Token(TOKEN_TYPE.STRING, "b"),
+        new Token(TOKEN_TYPE.COLON),
+        new Token(TOKEN_TYPE.NUMBER, 2),
+        new Token(TOKEN_TYPE.RBRACE),
+        new Token(TOKEN_TYPE.RBRACKET),
+      ]);
+    });
+  });
+
+  describe("whitespace handling", () => {
+    test("tokenize object with insignificant whitespace", () => {
+      const input = `{
+        "age" : 45 ,
+        "ok" : true
+      }`;
+      const result = tokenize(input);
+      expect(result).toEqual([
+        new Token(TOKEN_TYPE.LBRACE),
+        new Token(TOKEN_TYPE.STRING, "age"),
+        new Token(TOKEN_TYPE.COLON),
+        new Token(TOKEN_TYPE.NUMBER, 45),
+        new Token(TOKEN_TYPE.COMMA),
+        new Token(TOKEN_TYPE.STRING, "ok"),
+        new Token(TOKEN_TYPE.COLON),
+        new Token(TOKEN_TYPE.BOOLEAN, true),
+        new Token(TOKEN_TYPE.RBRACE),
+      ]);
+    });
+  });
+
   describe("invalid input", () => {
     test("throws on unterminated string", () => {
       const input = '{"foo":"bar}';
