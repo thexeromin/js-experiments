@@ -1,6 +1,7 @@
 import { test, describe, expect } from "vitest";
 import {
   tokenize,
+  parse,
   Token,
   TOKEN_TYPE,
   readNumber,
@@ -348,3 +349,47 @@ describe("tokenize", () => {
     });
   });
 });
+
+describe("parse", () => {
+  // primitives
+  test("parse empty array", () => {
+     let tokens = [
+       new Token(TOKEN_TYPE.LBRACKET),
+       new Token(TOKEN_TYPE.RBRACKET),
+     ];
+     expect(parse(tokens)).toEqual([]);
+   });
+
+  test("parse empty object", () => {
+     let tokens = [
+       new Token(TOKEN_TYPE.LBRACE),
+       new Token(TOKEN_TYPE.RBRACE),
+     ];
+    expect(parse(tokens)).toEqual({});
+   });
+
+  test("parse a number", () => {
+     let tokens = [new Token(TOKEN_TYPE.NUMBER, 42)];
+     expect(parse(tokens)).toEqual(42);
+   });
+
+   test("parse a string", () => {
+     let tokens = [new Token(TOKEN_TYPE.STRING, "hello")];
+     expect(parse(tokens)).toEqual("hello");
+   });
+
+   test("parse true", () => {
+     let tokens = [new Token(TOKEN_TYPE.BOOLEAN, true)];
+     expect(parse(tokens)).toEqual(true);
+   });
+
+   test("parse false", () => {
+     let tokens = [new Token(TOKEN_TYPE.BOOLEAN, false)];
+     expect(parse(tokens)).toEqual(false);
+   });
+
+   test("parse null", () => {
+     let tokens = [new Token(TOKEN_TYPE.NULL)];
+     expect(parse(tokens)).toEqual(null);
+   });
+})

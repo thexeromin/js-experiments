@@ -223,9 +223,68 @@ export function tokenize(source) {
   return tokens;
 }
 
+/* Parser */
+export function parse(tokens) {
+  let i = 0;
+
+  function parseValue() {
+    const token = tokens[i];
+
+    if (token.type === TOKEN_TYPE.LBRACKET) return parseArray();
+    if (token.type === TOKEN_TYPE.LBRACE) return parseObject();
+    if (token.type === TOKEN_TYPE.NUMBER) return tokens[i++].value;
+    if (token.type === TOKEN_TYPE.STRING) return tokens[i++].value;
+    if (token.type === TOKEN_TYPE.NULL) return tokens[i++].value;
+    if (token.type === TOKEN_TYPE.BOOLEAN) return tokens[i++].value;
+
+    throw new Error("Unexpected token");
+  }
+
+  function parseObject() {
+    i++;
+    let obj = {};
+
+    while (tokens[i].type !== TOKEN_TYPE.RBRACE) {
+      let key = tokens[i++].value;
+
+      if (tokens[i].type !== TOKEN_TYPE.COLON)
+        throw new Error("not a valid object");
+      i++;
+
+      const value = parseValue();
+
+      obj[key] = value;
+
+      if (tokens[i].type === TOKEN_TYPE.COMMA) i++;
+    }
+
+    i++;
+
+    return obj;
+  }
+
+  function parseArray() {
+    i++;
+
+    let arr = [];
+    while (tokens[i].type !== TOKEN_TYPE.RBRACKET) {
+      arr.push(parseValue());
+
+      if (tokens[i].type === TOKEN_TYPE.COMMA) i++;
+    }
+
+    i++;
+
+    return arr;
+  }
+
+  return parseValue();
+}
+
 function main() {
-  // const jsonString = '{"age":45, "name": "john doe"}';
-  // console.log(tokenize(jsonString));
+  // const jsonstring = '{"age":45, "name": "john doe"}';
+  // const jsonString = '[]';
+  // console.log(ptokenize(jsonstring));
 }
 
 main();
