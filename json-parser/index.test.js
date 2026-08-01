@@ -438,4 +438,83 @@ describe("parse", () => {
     ];
     expect(parse(tokens)).toEqual([[1]]);
   });
+
+  // Objects
+   test("parse empty object", () => {
+     let tokens = [
+       new Token(TOKEN_TYPE.LBRACE),
+       new Token(TOKEN_TYPE.RBRACE),
+     ];
+     expect(parse(tokens)).toEqual({});
+   });
+
+   test("parse object with single key-value pair", () => {
+     let tokens = [
+       new Token(TOKEN_TYPE.LBRACE),
+       new Token(TOKEN_TYPE.STRING, "key"),
+       new Token(TOKEN_TYPE.COLON),
+       new Token(TOKEN_TYPE.STRING, "value"),
+       new Token(TOKEN_TYPE.RBRACE),
+     ];
+     expect(parse(tokens)).toEqual({ key: "value" });
+   });
+
+   test("parse object with multiple key-value pairs", () => {
+     let tokens = [
+       new Token(TOKEN_TYPE.LBRACE),
+       new Token(TOKEN_TYPE.STRING, "a"),
+       new Token(TOKEN_TYPE.COLON),
+       new Token(TOKEN_TYPE.NUMBER, 1),
+       new Token(TOKEN_TYPE.COMMA),
+       new Token(TOKEN_TYPE.STRING, "b"),
+       new Token(TOKEN_TYPE.COLON),
+       new Token(TOKEN_TYPE.NUMBER, 2),
+       new Token(TOKEN_TYPE.RBRACE),
+     ];
+     expect(parse(tokens)).toEqual({ a: 1, b: 2 });
+   });
+
+   // Mixing objects and arrays
+    test("parse object containing an array", () => {
+      let tokens = [
+        new Token(TOKEN_TYPE.LBRACE),
+        new Token(TOKEN_TYPE.STRING, "list"),
+        new Token(TOKEN_TYPE.COLON),
+        new Token(TOKEN_TYPE.LBRACKET),
+        new Token(TOKEN_TYPE.NUMBER, 1),
+        new Token(TOKEN_TYPE.COMMA),
+        new Token(TOKEN_TYPE.NUMBER, 2),
+        new Token(TOKEN_TYPE.RBRACKET),
+        new Token(TOKEN_TYPE.RBRACE),
+      ];
+      expect(parse(tokens)).toEqual({ list: [1, 2] });
+    });
+
+    test("parse array containing an object", () => {
+      let tokens = [
+        new Token(TOKEN_TYPE.LBRACKET),
+        new Token(TOKEN_TYPE.LBRACE),
+        new Token(TOKEN_TYPE.STRING, "key"),
+        new Token(TOKEN_TYPE.COLON),
+        new Token(TOKEN_TYPE.NUMBER, 1),
+        new Token(TOKEN_TYPE.RBRACE),
+        new Token(TOKEN_TYPE.RBRACKET),
+      ];
+      expect(parse(tokens)).toEqual([{ key: 1 }]);
+    });
+
+    test("parse nested object", () => {
+      let tokens = [
+        new Token(TOKEN_TYPE.LBRACE),
+        new Token(TOKEN_TYPE.STRING, "outer"),
+        new Token(TOKEN_TYPE.COLON),
+        new Token(TOKEN_TYPE.LBRACE),
+        new Token(TOKEN_TYPE.STRING, "inner"),
+        new Token(TOKEN_TYPE.COLON),
+        new Token(TOKEN_TYPE.NUMBER, 1),
+        new Token(TOKEN_TYPE.RBRACE),
+        new Token(TOKEN_TYPE.RBRACE),
+      ];
+      expect(parse(tokens)).toEqual({ outer: { inner: 1 } });
+    });
 });

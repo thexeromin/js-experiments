@@ -280,13 +280,3 @@ export function parse(tokens) {
 
   return parseValue();
 }
-
-function main() {
-  // const jsonstring = '{"age":45, "name": "john doe"}';
-  const jsonString = '[[1]]';
-  const tokens = tokenize(jsonString);
-  const parsed = parse(tokens);
-  console.log(parsed);
-}
-
-main();
