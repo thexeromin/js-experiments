@@ -4,7 +4,7 @@ export const TOKEN_TYPE = Object.freeze({
   LBRACE: "LBRACE",
   RBRACE: "RBRACE",
   LBRACKET: "LBRACKET",
-  RBRACKET: "LBRACKET",
+  RBRACKET: "RBRACKET",
   COLON: "COLON",
   COMMA: "COMMA",
   NULL: "NULL",
@@ -283,8 +283,10 @@ export function parse(tokens) {
 
 function main() {
   // const jsonstring = '{"age":45, "name": "john doe"}';
-  // const jsonString = '[]';
-  // console.log(ptokenize(jsonstring));
+  const jsonString = '[[1]]';
+  const tokens = tokenize(jsonString);
+  const parsed = parse(tokens);
+  console.log(parsed);
 }
 
 main();

@@ -2,14 +2,15 @@
   "name": "json-parser",
   "version": "1.0.0",
   "description": "A simple json parser built with JavaScript.",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "vitest"
+    "test": "vitest",
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "devDependencies": {
     "vitest": "^4.1.10"
   }

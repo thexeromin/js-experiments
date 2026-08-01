@@ -353,43 +353,89 @@ describe("tokenize", () => {
 describe("parse", () => {
   // primitives
   test("parse empty array", () => {
-     let tokens = [
-       new Token(TOKEN_TYPE.LBRACKET),
-       new Token(TOKEN_TYPE.RBRACKET),
-     ];
-     expect(parse(tokens)).toEqual([]);
-   });
+    let tokens = [
+      new Token(TOKEN_TYPE.LBRACKET),
+      new Token(TOKEN_TYPE.RBRACKET),
+    ];
+    expect(parse(tokens)).toEqual([]);
+  });
 
   test("parse empty object", () => {
-     let tokens = [
-       new Token(TOKEN_TYPE.LBRACE),
-       new Token(TOKEN_TYPE.RBRACE),
-     ];
+    let tokens = [new Token(TOKEN_TYPE.LBRACE), new Token(TOKEN_TYPE.RBRACE)];
     expect(parse(tokens)).toEqual({});
-   });
+  });
 
   test("parse a number", () => {
-     let tokens = [new Token(TOKEN_TYPE.NUMBER, 42)];
-     expect(parse(tokens)).toEqual(42);
-   });
+    let tokens = [new Token(TOKEN_TYPE.NUMBER, 42)];
+    expect(parse(tokens)).toEqual(42);
+  });
 
-   test("parse a string", () => {
-     let tokens = [new Token(TOKEN_TYPE.STRING, "hello")];
-     expect(parse(tokens)).toEqual("hello");
-   });
+  test("parse a string", () => {
+    let tokens = [new Token(TOKEN_TYPE.STRING, "hello")];
+    expect(parse(tokens)).toEqual("hello");
+  });
 
-   test("parse true", () => {
-     let tokens = [new Token(TOKEN_TYPE.BOOLEAN, true)];
-     expect(parse(tokens)).toEqual(true);
-   });
+  test("parse true", () => {
+    let tokens = [new Token(TOKEN_TYPE.BOOLEAN, true)];
+    expect(parse(tokens)).toEqual(true);
+  });
 
-   test("parse false", () => {
-     let tokens = [new Token(TOKEN_TYPE.BOOLEAN, false)];
-     expect(parse(tokens)).toEqual(false);
-   });
+  test("parse false", () => {
+    let tokens = [new Token(TOKEN_TYPE.BOOLEAN, false)];
+    expect(parse(tokens)).toEqual(false);
+  });
 
-   test("parse null", () => {
-     let tokens = [new Token(TOKEN_TYPE.NULL)];
-     expect(parse(tokens)).toEqual(null);
-   });
-})
+  test("parse null", () => {
+    let tokens = [new Token(TOKEN_TYPE.NULL)];
+    expect(parse(tokens)).toEqual(null);
+  });
+
+  // Arrays with content
+  test("parse array with single number", () => {
+    let tokens = [
+      new Token(TOKEN_TYPE.LBRACKET),
+      new Token(TOKEN_TYPE.NUMBER, 1),
+      new Token(TOKEN_TYPE.RBRACKET),
+    ];
+    expect(parse(tokens)).toEqual([1]);
+  });
+
+  test("parse array with multiple numbers", () => {
+    let tokens = [
+      new Token(TOKEN_TYPE.LBRACKET),
+      new Token(TOKEN_TYPE.NUMBER, 1),
+      new Token(TOKEN_TYPE.COMMA),
+      new Token(TOKEN_TYPE.NUMBER, 2),
+      new Token(TOKEN_TYPE.COMMA),
+      new Token(TOKEN_TYPE.NUMBER, 3),
+      new Token(TOKEN_TYPE.RBRACKET),
+    ];
+    expect(parse(tokens)).toEqual([1, 2, 3]);
+  });
+
+  test("parse array with mixed types", () => {
+    let tokens = [
+      new Token(TOKEN_TYPE.LBRACKET),
+      new Token(TOKEN_TYPE.STRING, "a"),
+      new Token(TOKEN_TYPE.COMMA),
+      new Token(TOKEN_TYPE.NUMBER, 1),
+      new Token(TOKEN_TYPE.COMMA),
+      new Token(TOKEN_TYPE.BOOLEAN, true),
+      new Token(TOKEN_TYPE.COMMA),
+      new Token(TOKEN_TYPE.NULL),
+      new Token(TOKEN_TYPE.RBRACKET),
+    ];
+    expect(parse(tokens)).toEqual(["a", 1, true, null]);
+  });
+
+  test("parse nested array", () => {
+    let tokens = [
+      new Token(TOKEN_TYPE.LBRACKET),
+      new Token(TOKEN_TYPE.LBRACKET),
+      new Token(TOKEN_TYPE.NUMBER, 1),
+      new Token(TOKEN_TYPE.RBRACKET),
+      new Token(TOKEN_TYPE.RBRACKET),
+    ];
+    expect(parse(tokens)).toEqual([[1]]);
+  });
+});
